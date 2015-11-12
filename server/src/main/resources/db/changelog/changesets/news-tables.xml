@@ -1,0 +1,54 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+    <changeSet id="news-tables" author="aav" dbms="hsqldb,h2,mysql">
+        <comment>Create news tables</comment>
+        <!-- authors table -->
+        <createTable tableName="authors">
+            <column name="id" type="varchar(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="first_name" type="varchar(100)" nullable="false"/>
+            <column name="last_name" type="varchar(100)" nullable="false"/>
+        </createTable>
+        <!-- articles table -->
+        <createTable tableName="articles">
+            <column name="id" type="varchar(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="header" type="varchar(255)" nullable="false"/>
+            <column name="description" type="varchar(600)" nullable="false"/>
+            <column name="text" type="varchar(6000)" nullable="false"/>
+            <column name="publish_date" type="timestamp" nullable="true"/>
+            <column name="keywords" type="varchar(255)" nullable="false"/>
+        </createTable>
+        <!-- author_article table-->
+        <createTable tableName="author_article">
+            <column name="author_id" type="varchar(255)" nullable="false"/>
+            <column name="article_id" type="varchar(255)" nullable="false"/>
+        </createTable>
+
+        <addPrimaryKey columnNames="author_id, article_id"
+                       constraintName="pk_author_article"
+                       tableName="author_article"/>
+
+        <addForeignKeyConstraint baseColumnNames="author_id"
+                                 baseTableName="author_article"
+                                 constraintName="fk_author_article_author"
+                                 referencedColumnNames="id"
+                                 referencedTableName="authors"/>
+
+        <addForeignKeyConstraint baseColumnNames="article_id"
+                                 baseTableName="author_article"
+                                 constraintName="fk_author_article_article"
+                                 referencedColumnNames="id"
+                                 referencedTableName="articles"/>
+        <rollback>
+            <dropTable tableName="author_article"/>
+            <dropTable tableName="authors"/>
+            <dropTable tableName="articles"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

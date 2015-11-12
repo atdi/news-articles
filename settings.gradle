@@ -1,0 +1,5 @@
+rootProject.name = 'news-articles'
+include 'model'
+include 'server'
+include 'client'
+

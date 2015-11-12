@@ -1,0 +1,21 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath ("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'spring-boot'
+
+
+dependencies {
+    compile project(":model")
+    // Spring boot starters
+    compile("org.springframework.boot:spring-boot-starter-jersey")
+    compile("org.springframework.boot:spring-boot-starter-data-jpa")
+    compile("com.h2database:h2")
+    compile("org.liquibase:liquibase-core:3.3.2")
+    testCompile("org.springframework.boot:spring-boot-starter-test")
+}
