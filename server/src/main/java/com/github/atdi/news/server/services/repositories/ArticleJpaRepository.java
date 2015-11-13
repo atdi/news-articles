@@ -55,7 +55,7 @@ public interface ArticleJpaRepository extends JpaRepository<Article, String> {
      * @param authorId author id
      * @return articles
      */
-    @Query("select a from Article a join a.authors au where au.id = ?2")
+    @Query("select a from Article a join a.authors au where au.id = ?1")
     Page<Article> findByAuthor(final Pageable pageable,
                                final String authorId);
 
@@ -66,7 +66,7 @@ public interface ArticleJpaRepository extends JpaRepository<Article, String> {
      * @param keyword keyword
      * @return articles
      */
-    @Query("select a from Article a join a.keywords k where k = ?2")
+    @Query("select a from Article a join a.keywords k where k = ?1")
     Page<Article> findByKeyword(final Pageable pageable,
                                 final String keyword);
 }

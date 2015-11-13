@@ -60,7 +60,7 @@ public class Article {
     @NotNull
     private Set<String> keywords;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "author_article",
             joinColumns = {@JoinColumn(name = "article_id",

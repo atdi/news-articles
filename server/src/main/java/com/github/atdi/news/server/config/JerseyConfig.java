@@ -1,6 +1,7 @@
 package com.github.atdi.news.server.config;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import com.github.atdi.news.server.util.JacksonContextResolver;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.validation.ValidationError;
@@ -26,6 +27,7 @@ public class JerseyConfig extends ResourceConfig {
                 BV_DISABLE_VALIDATE_ON_EXECUTABLE_OVERRIDE_CHECK, true);
         register(ValidationError.class);
         register(JacksonJaxbJsonProvider.class);
+        register(JacksonContextResolver.class);
         packages("com.github.atdi.news.server.resources");
     }
 }

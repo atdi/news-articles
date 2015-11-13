@@ -24,6 +24,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.time.LocalDateTime;
 
 /**
  * Article REST resource.
@@ -73,8 +74,11 @@ public class ArticleResource {
             throw new NewsException("Article not found",
                     Response.Status.NOT_FOUND);
         }
+        Article toBeSaved = article
+                .toBuilder()
+                .publishDate(LocalDateTime.now()).build();
 
-        return Response.ok(articleService.save(article)).build();
+        return Response.ok(articleService.save(toBeSaved)).build();
     }
 
 
