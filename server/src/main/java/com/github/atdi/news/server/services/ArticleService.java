@@ -117,4 +117,28 @@ public class ArticleService {
                 searchPublishedBefore(pageable, endDate);
     }
 
+    /**
+     * Get all articles by specified keyword.
+     *
+     * @param pageable pagination details
+     * @param keyword keyword
+     * @return articles
+     */
+    public Page<Article> getAllByKeyword(final Pageable pageable,
+                                         final String keyword) {
+        return articleSearchService.searchByKeyword(pageable, keyword);
+    }
+
+    /**
+     * Get all articles by specified author.
+     *
+     * @param pageable pagination details
+     * @param authorId author id
+     * @return articles
+     */
+    public Page<Article> getAllByAuthor(final Pageable pageable,
+                                         final String authorId) {
+        return articleSearchService.searchByAuthor(pageable, authorId);
+    }
+
 }

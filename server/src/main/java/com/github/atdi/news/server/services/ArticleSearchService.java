@@ -1,7 +1,6 @@
 package com.github.atdi.news.server.services;
 
 import com.github.atdi.news.model.Article;
-import com.github.atdi.news.model.Author;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -52,10 +51,21 @@ public interface ArticleSearchService {
     /**
      * Find all articles for specified keyword.
      *
+     * @param pageable pagination details
      * @param keyword keyword
      * @return articles
      */
-    Page<Article> searchByKeyword(final String keyword);
+    Page<Article> searchByKeyword(Pageable pageable,
+                                  String keyword);
 
+    /**
+     * Find all articles for specified author id.
+     *
+     * @param pageable pagination details
+     * @param authorId author id
+     * @return articles
+     */
+    Page<Article> searchByAuthor(Pageable pageable,
+                                 String authorId);
 
 }

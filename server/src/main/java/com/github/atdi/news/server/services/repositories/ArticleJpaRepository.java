@@ -1,7 +1,6 @@
 package com.github.atdi.news.server.services.repositories;
 
 import com.github.atdi.news.model.Article;
-import com.github.atdi.news.model.Author;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -59,4 +58,15 @@ public interface ArticleJpaRepository extends JpaRepository<Article, String> {
     @Query("select a from Article a join a.authors where on au.id = ?2")
     Page<Article> findByAuthor(final Pageable pageable,
                                final String authorId);
+
+    /**
+     * Find articles by given keyword.
+     *
+     * @param pageable pagination details
+     * @param keyword keyword
+     * @return articles
+     */
+    @Query("select a from Article a join a.keywords k where k = ?2")
+    Page<Article> findByKeyword(final Pageable pageable,
+                                final String keyword);
 }

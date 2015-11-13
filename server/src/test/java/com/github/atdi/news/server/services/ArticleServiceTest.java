@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.Arrays;
+import java.util.UUID;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -29,6 +30,7 @@ public class ArticleServiceTest {
     private ArticleJpaRepository articleJpaRepository;
 
     private ArticleService articleService;
+
 
     @Before
     public void setUp() {
@@ -141,6 +143,40 @@ public class ArticleServiceTest {
         LocalDateTime endDate = LocalDateTime.now();
         when(articleJpaRepository.findByPublishDateBefore(pageable, endDate)).thenReturn(page);
         Page<Article> result = articleService.getAllPublishedBefore(pageable, endDate);
+        assertEquals(2, result.getContent().size());
+    }
+
+    @Test
+    public void testGetAllByKeyword() throws Exception {
+        String keyword  = "fire";
+        Page<Article> page = mock(Page.class);
+        when(page.getTotalPages()).thenReturn(1);
+        when(page.getTotalElements()).thenReturn(2L);
+        Article article1 = mock(Article.class);
+        Article article2 = mock(Article.class);
+        when(page.getContent()).
+                thenReturn(Arrays.asList(article1,
+                        article2));
+        Pageable pageable = new PageRequest(0, 10);
+        when(articleJpaRepository.findByKeyword(pageable, keyword)).thenReturn(page);
+        Page<Article> result = articleService.getAllByKeyword(pageable, keyword);
+        assertEquals(2, result.getContent().size());
+    }
+
+    @Test
+    public void testGetAllByAuthor() throws Exception {
+        String id  = UUID.randomUUID().toString();
+        Page<Article> page = mock(Page.class);
+        when(page.getTotalPages()).thenReturn(1);
+        when(page.getTotalElements()).thenReturn(2L);
+        Article article1 = mock(Article.class);
+        Article article2 = mock(Article.class);
+        when(page.getContent()).
+                thenReturn(Arrays.asList(article1,
+                        article2));
+        Pageable pageable = new PageRequest(0, 10);
+        when(articleJpaRepository.findByAuthor(pageable, id)).thenReturn(page);
+        Page<Article> result = articleService.getAllByAuthor(pageable, id);
         assertEquals(2, result.getContent().size());
     }
 }

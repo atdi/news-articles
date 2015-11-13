@@ -47,7 +47,14 @@ public class ArticleJpaSearch implements ArticleSearchService {
     }
 
     @Override
-    public Page<Article> searchByKeyword(final String keyword) {
-        return null;
+    public Page<Article> searchByKeyword(final Pageable pageable,
+                                         final String keyword) {
+        return articleJpaRepository.findByKeyword(pageable, keyword);
+    }
+
+    @Override
+    public Page<Article> searchByAuthor(final Pageable pageable,
+                                        final String authorId) {
+        return articleJpaRepository.findByAuthor(pageable, authorId);
     }
 }
