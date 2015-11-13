@@ -1,4 +1,5 @@
 dependencies {
+    provided ("com.fasterxml.jackson.core:jackson-annotations:2.4.0")
     provided ("javax.validation:validation-api:${javaxValidationApi}")
     provided ("org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final")
 }

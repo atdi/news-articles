@@ -1,26 +1,21 @@
 package com.github.atdi.news.server.services.repositories;
 
 import com.github.atdi.news.model.Article;
+import com.github.atdi.news.model.Author;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
 
 /**
  * Article data repository.
- * <p>
+ *
  * Created by aurelavramescu on 12/11/15.
  */
-public interface ArticleRepository extends CrudRepository<Article, String> {
+public interface ArticleJpaRepository extends JpaRepository<Article, String> {
 
-    /**
-     * Find all articles.
-     *
-     * @param pageable pagination details
-     * @return articles
-     */
-    Page<Article> findAll(final Pageable pageable);
 
     /**
      * Find articles published between specified dates.
@@ -53,4 +48,15 @@ public interface ArticleRepository extends CrudRepository<Article, String> {
      */
     Page<Article> findByPublishDateBefore(final Pageable pageable,
                                           final LocalDateTime endDate);
+
+    /**
+     * Find articles by given author.
+     *
+     * @param pageable pagination details
+     * @param authorId author id
+     * @return articles
+     */
+    @Query("select a from Article a join a.authors where on au.id = ?2")
+    Page<Article> findByAuthor(final Pageable pageable,
+                               final String authorId);
 }

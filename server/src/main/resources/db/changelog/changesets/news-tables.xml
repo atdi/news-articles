@@ -10,24 +10,40 @@
             <column name="id" type="varchar(255)">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="first_name" type="varchar(100)" nullable="false"/>
-            <column name="last_name" type="varchar(100)" nullable="false"/>
+            <column name="first_name" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
         <!-- articles table -->
         <createTable tableName="articles">
             <column name="id" type="varchar(255)">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="header" type="varchar(255)" nullable="false"/>
-            <column name="description" type="varchar(600)" nullable="false"/>
-            <column name="text" type="varchar(6000)" nullable="false"/>
-            <column name="publish_date" type="timestamp" nullable="true"/>
-            <column name="keywords" type="varchar(255)" nullable="false"/>
+            <column name="header" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(600)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="text" type="varchar(6000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="publish_date" type="timestamp"/>
+            <column name="keywords" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
         <!-- author_article table-->
         <createTable tableName="author_article">
-            <column name="author_id" type="varchar(255)" nullable="false"/>
-            <column name="article_id" type="varchar(255)" nullable="false"/>
+            <column name="author_id" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="article_id" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
 
         <addPrimaryKey columnNames="author_id, article_id"

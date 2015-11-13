@@ -1,8 +1,7 @@
 package com.github.atdi.news.server.services;
 
 import com.github.atdi.news.model.Article;
-import com.github.atdi.news.server.services.repositories.ArticleRepository;
-import com.github.atdi.news.server.services.repositories.AuthorRepository;
+import com.github.atdi.news.server.services.repositories.ArticleJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,22 +12,24 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
+ * Article service.
+ * <p>
  * Created by aurelavramescu on 12/11/15.
  */
 @RequiredArgsConstructor(onConstructor = @__({@Inject}))
 @Service
-public class NewsService {
+public class ArticleService {
 
-    private final ArticleRepository articleRepository;
+    private final ArticleJpaRepository articleJpaRepository;
 
-    private final AuthorRepository authorRepository;
+    private final ArticleSearchService articleSearchService;
 
     /**
      * Generate a new id.
      *
      * @return id
      */
-    public final String generateId() {
+    public String generateId() {
         return UUID.randomUUID().toString();
     }
 
@@ -38,8 +39,8 @@ public class NewsService {
      * @param article article to be saved
      * @return article
      */
-    public final Article saveArticle(final Article article) {
-        return articleRepository.save(article);
+    public Article save(final Article article) {
+        return articleJpaRepository.save(article);
     }
 
     /**
@@ -48,8 +49,8 @@ public class NewsService {
      * @param id article id
      * @return article article
      */
-    public final Article findArticle(final String id) {
-        return articleRepository.findOne(id);
+    public Article find(final String id) {
+        return articleJpaRepository.findOne(id);
     }
 
     /**
@@ -57,8 +58,8 @@ public class NewsService {
      *
      * @param id article id
      */
-    public final void deleteArticle(final String id) {
-        articleRepository.delete(id);
+    public void delete(final String id) {
+        articleJpaRepository.delete(id);
     }
 
     /**
@@ -67,23 +68,23 @@ public class NewsService {
      * @param pageable pagination settings
      * @return articles
      */
-    public final Page<Article> getAllArticles(final Pageable pageable) {
-        return articleRepository.findAll(pageable);
+    public Page<Article> getAll(final Pageable pageable) {
+        return articleJpaRepository.findAll(pageable);
     }
 
     /**
      * Find all articles published between specified dates.
      *
-     * @param pageable pagination details
+     * @param pageable  pagination details
      * @param startDate start date
-     * @param endDate end date
+     * @param endDate   end date
      * @return articles
      */
-    public final Page<Article> getAllArticlesPublishedBetween(
+    public Page<Article> getAllPublishedBetween(
             final Pageable pageable,
             final LocalDateTime startDate,
             final LocalDateTime endDate) {
-        return articleRepository.findByPublishDateBetween(pageable,
+        return articleSearchService.searchPublishedBetween(pageable,
                 startDate,
                 endDate);
     }
@@ -91,27 +92,29 @@ public class NewsService {
     /**
      * Find all articles published after specified date.
      *
-     * @param pageable pagination details
+     * @param pageable  pagination details
      * @param startDate start date
      * @return articles
      */
-    public final Page<Article> getAllArticlesPublishedAfter(
+    public Page<Article> getAllPublishedAfter(
             final Pageable pageable,
             final LocalDateTime startDate) {
-        return articleRepository.findByPublishDateAfter(pageable, startDate);
+        return articleSearchService.
+                searchPublishedAfter(pageable, startDate);
     }
 
     /**
      * Find all articles published before specified date.
      *
      * @param pageable pagination details
-     * @param endDate end date
+     * @param endDate  end date
      * @return articles
      */
-    public final Page<Article> getAllArticlesPublishedBefore(
+    public Page<Article> getAllPublishedBefore(
             final Pageable pageable,
             final LocalDateTime endDate) {
-        return articleRepository.findByPublishDateBefore(pageable, endDate);
+        return articleSearchService.
+                searchPublishedBefore(pageable, endDate);
     }
 
 }

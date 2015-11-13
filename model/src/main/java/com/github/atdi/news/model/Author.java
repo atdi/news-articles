@@ -1,5 +1,7 @@
 package com.github.atdi.news.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -18,6 +20,7 @@ import java.util.Set;
  * <p>
  * Created by aurelavramescu on 12/11/15.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Table(name = "authors")
 @Entity
 @Getter
@@ -39,6 +42,7 @@ public class Author {
     @NotNull
     private String lastName;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "authors")
     private Set<Article> articles;
 }
