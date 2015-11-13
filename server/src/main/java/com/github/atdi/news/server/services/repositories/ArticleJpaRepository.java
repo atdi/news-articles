@@ -55,7 +55,7 @@ public interface ArticleJpaRepository extends JpaRepository<Article, String> {
      * @param authorId author id
      * @return articles
      */
-    @Query("select a from Article a join a.authors where on au.id = ?2")
+    @Query("select a from Article a join a.authors au where au.id = ?2")
     Page<Article> findByAuthor(final Pageable pageable,
                                final String authorId);
 

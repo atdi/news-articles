@@ -10,7 +10,7 @@ import javax.inject.Inject;
 
 /**
  * Spring config for jpa search.
- *
+ * <p>
  * Created by aurelavramescu on 13/11/15.
  */
 @Configuration

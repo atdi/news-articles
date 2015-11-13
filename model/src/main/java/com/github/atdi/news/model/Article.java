@@ -33,7 +33,7 @@ import java.util.Set;
 @Getter
 @Builder(toBuilder = true)
 @EqualsAndHashCode(of = { "id" })
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Article {
 
