@@ -1,11 +1,10 @@
 package com.github.atdi.news.server.services;
 
 import com.github.atdi.news.model.Article;
-import com.github.atdi.news.server.services.repositories.ArticleRepository;
-import com.github.atdi.news.server.services.repositories.AuthorRepository;
+import com.github.atdi.news.server.services.repositories.ArticleJpaRepository;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.internal.util.collections.Sets;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -16,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.Arrays;
+import java.util.UUID;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -24,40 +24,44 @@ import static org.mockito.Mockito.*;
  * Created by aurelavramescu on 12/11/15.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class NewsServiceTest {
+public class ArticleServiceTest {
 
     @Mock
-    private ArticleRepository articleRepository;
+    private ArticleJpaRepository articleJpaRepository;
 
-    @Mock
-    private AuthorRepository authorRepository;
+    private ArticleService articleService;
 
-    @InjectMocks
-    private NewsService newsService;
+
+    @Before
+    public void setUp() {
+        ArticleSearchService searchService = new ArticleJpaSearch(articleJpaRepository);
+        articleService = new ArticleService(articleJpaRepository,
+                searchService);
+    }
 
     @Test
     public void testGenerateId() throws Exception {
-        String id = newsService.generateId();
+        String id = articleService.generateId();
         assertNotNull(id);
     }
 
     @Test
-    public void testSaveArticle() throws Exception {
+    public void testSave() throws Exception {
         Article article = Article.builder()
-                .id(newsService.generateId())
+                .id(articleService.generateId())
                 .header("This is a test")
                 .description("This is a small article")
                 .keywords(Sets.<String>newSet("fire", "water"))
                 .text("Content")
                 .build();
-        when(articleRepository.save(article)).thenReturn(article);
-        Article savedInstance = newsService.saveArticle(article);
+        when(articleJpaRepository.save(article)).thenReturn(article);
+        Article savedInstance = articleService.save(article);
         assertEquals(article, savedInstance);
     }
 
     @Test
-    public void testDeleteArticle() throws Exception {
-        String id = newsService.generateId();
+    public void testDelete() throws Exception {
+        String id = articleService.generateId();
         Article article = Article.builder()
                 .id(id)
                 .header("This is a test")
@@ -65,15 +69,15 @@ public class NewsServiceTest {
                 .keywords(Sets.<String>newSet("fire", "water"))
                 .text("Content")
                 .build();
-        when(articleRepository.save(article)).thenReturn(article);
-        newsService.saveArticle(article);
-        newsService.deleteArticle(id);
-        Article deletedArticle = newsService.findArticle(id);
+        when(articleJpaRepository.save(article)).thenReturn(article);
+        articleService.save(article);
+        articleService.delete(id);
+        Article deletedArticle = articleService.find(id);
         assertNull(deletedArticle);
     }
 
     @Test
-    public void testGetAllArticles() throws Exception {
+    public void testGetAll() throws Exception {
         Page<Article> page = mock(Page.class);
         when(page.getTotalPages()).thenReturn(1);
         when(page.getTotalElements()).thenReturn(2L);
@@ -83,13 +87,13 @@ public class NewsServiceTest {
                 thenReturn(Arrays.asList(article1,
                         article2));
         Pageable pageable = new PageRequest(0, 10);
-        when(articleRepository.findAll(pageable)).thenReturn(page);
-        Page<Article> result = newsService.getAllArticles(pageable);
+        when(articleJpaRepository.findAll(pageable)).thenReturn(page);
+        Page<Article> result = articleService.getAll(pageable);
         assertEquals(2, result.getContent().size());
     }
 
     @Test
-    public void testGetAllArticlesPublishedBetween() throws Exception {
+    public void testGetAllPublishedBetween() throws Exception {
         Page<Article> page = mock(Page.class);
         when(page.getTotalPages()).thenReturn(1);
         when(page.getTotalElements()).thenReturn(2L);
@@ -102,13 +106,13 @@ public class NewsServiceTest {
         LocalDateTime startDate = LocalDateTime.
                 of(2015, Month.AUGUST, 10, 8, 15);
         LocalDateTime endDate = LocalDateTime.now();
-        when(articleRepository.findByPublishDateBetween(pageable, startDate, endDate)).thenReturn(page);
-        Page<Article> result = newsService.getAllArticlesPublishedBetween(pageable, startDate, endDate);
+        when(articleJpaRepository.findByPublishDateBetween(pageable, startDate, endDate)).thenReturn(page);
+        Page<Article> result = articleService.getAllPublishedBetween(pageable, startDate, endDate);
         assertEquals(2, result.getContent().size());
     }
 
     @Test
-    public void testGetAllArticlesPublishedAfter() throws Exception {
+    public void testGetAllPublishedAfter() throws Exception {
         Page<Article> page = mock(Page.class);
         when(page.getTotalPages()).thenReturn(1);
         when(page.getTotalElements()).thenReturn(2L);
@@ -120,13 +124,13 @@ public class NewsServiceTest {
         Pageable pageable = new PageRequest(0, 10);
         LocalDateTime startDate = LocalDateTime.
                 of(2015, Month.AUGUST, 10, 8, 15);
-        when(articleRepository.findByPublishDateAfter(pageable, startDate)).thenReturn(page);
-        Page<Article> result = newsService.getAllArticlesPublishedAfter(pageable, startDate);
+        when(articleJpaRepository.findByPublishDateAfter(pageable, startDate)).thenReturn(page);
+        Page<Article> result = articleService.getAllPublishedAfter(pageable, startDate);
         assertEquals(2, result.getContent().size());
     }
 
     @Test
-    public void testGetAllArticlesPublishedBefore() throws Exception {
+    public void testGetAllPublishedBefore() throws Exception {
         Page<Article> page = mock(Page.class);
         when(page.getTotalPages()).thenReturn(1);
         when(page.getTotalElements()).thenReturn(2L);
@@ -137,8 +141,42 @@ public class NewsServiceTest {
                         article2));
         Pageable pageable = new PageRequest(0, 10);
         LocalDateTime endDate = LocalDateTime.now();
-        when(articleRepository.findByPublishDateBefore(pageable, endDate)).thenReturn(page);
-        Page<Article> result = newsService.getAllArticlesPublishedBefore(pageable, endDate);
+        when(articleJpaRepository.findByPublishDateBefore(pageable, endDate)).thenReturn(page);
+        Page<Article> result = articleService.getAllPublishedBefore(pageable, endDate);
+        assertEquals(2, result.getContent().size());
+    }
+
+    @Test
+    public void testGetAllByKeyword() throws Exception {
+        String keyword  = "fire";
+        Page<Article> page = mock(Page.class);
+        when(page.getTotalPages()).thenReturn(1);
+        when(page.getTotalElements()).thenReturn(2L);
+        Article article1 = mock(Article.class);
+        Article article2 = mock(Article.class);
+        when(page.getContent()).
+                thenReturn(Arrays.asList(article1,
+                        article2));
+        Pageable pageable = new PageRequest(0, 10);
+        when(articleJpaRepository.findByKeyword(pageable, keyword)).thenReturn(page);
+        Page<Article> result = articleService.getAllByKeyword(pageable, keyword);
+        assertEquals(2, result.getContent().size());
+    }
+
+    @Test
+    public void testGetAllByAuthor() throws Exception {
+        String id  = UUID.randomUUID().toString();
+        Page<Article> page = mock(Page.class);
+        when(page.getTotalPages()).thenReturn(1);
+        when(page.getTotalElements()).thenReturn(2L);
+        Article article1 = mock(Article.class);
+        Article article2 = mock(Article.class);
+        when(page.getContent()).
+                thenReturn(Arrays.asList(article1,
+                        article2));
+        Pageable pageable = new PageRequest(0, 10);
+        when(articleJpaRepository.findByAuthor(pageable, id)).thenReturn(page);
+        Page<Article> result = articleService.getAllByAuthor(pageable, id);
         assertEquals(2, result.getContent().size());
     }
 }
