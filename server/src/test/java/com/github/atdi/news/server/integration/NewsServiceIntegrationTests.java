@@ -2,7 +2,9 @@ package com.github.atdi.news.server.integration;
 
 import com.github.atdi.news.model.Article;
 import com.github.atdi.news.model.Author;
+import com.github.atdi.news.model.HttpError;
 import com.github.atdi.news.server.Bootstrap;
+import com.github.atdi.news.server.integration.utils.TestPageImpl;
 import com.github.atdi.news.server.util.JacksonContextResolver;
 import org.mockito.internal.util.collections.Sets;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -11,7 +13,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import static org.testng.Assert.*;
-
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -22,6 +23,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -45,6 +47,7 @@ public class NewsServiceIntegrationTests extends AbstractTestNGSpringContextTest
     private String lastArticleId;
 
     private String lastArticleUri;
+
 
     @BeforeClass
     public void setUp() throws Exception {
@@ -173,8 +176,119 @@ public class NewsServiceIntegrationTests extends AbstractTestNGSpringContextTest
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get();
         assertEquals(response.getStatus(), 200);
-        //Page<Article> page = (Page<Article>) response.getEntity();
-        //assertEquals(page.getSize(), 1);
+        Page<Article> page = response.readEntity(TestPageImpl.class);
+        assertEquals(page.getContent().size(), 1);
+    }
+
+    @Test(dependsOnMethods = { "saveArticle" })
+    public void getArticlesPublishedBetween() {
+        LocalDateTime now = LocalDateTime.now();
+        now = now.plusDays(10);
+        WebTarget webTarget = client.target(INTEGRATION_TESTS_URL + "/article/published");
+        String endDate = now.toString();
+        endDate = endDate.substring(0, endDate.indexOf("."));
+        Response response = webTarget
+                .queryParam("startDate", "2015-10-10T00:00:00")
+                .queryParam("endDate", endDate)
+                .queryParam("page", 0)
+                .queryParam("size", 10)
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get();
+        assertEquals(response.getStatus(), 200);
+        Page<Article> page = response.readEntity(TestPageImpl.class);
+        assertEquals(page.getContent().size(), 1);
+    }
+
+    @Test(dependsOnMethods = { "saveArticle" })
+    public void getArticlesPublishedAfter() {
+        LocalDateTime now = LocalDateTime.now();
+
+        WebTarget webTarget = client.target(INTEGRATION_TESTS_URL + "/article/published");
+        Response response = webTarget
+                .queryParam("startDate", "2015-10-10T00:00:00")
+                .queryParam("page", 0)
+                .queryParam("size", 10)
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get();
+        assertEquals(response.getStatus(), 200);
+        Page<Article> page = response.readEntity(TestPageImpl.class);
+        assertEquals(page.getContent().size(), 1);
+    }
+
+    @Test(dependsOnMethods = { "saveArticle" })
+    public void getArticlesPublishedBefore() {
+        LocalDateTime now = LocalDateTime.now();
+        now = now.plusDays(10);
+        WebTarget webTarget = client.target(INTEGRATION_TESTS_URL + "/article/published");
+        String endDate = now.toString();
+        endDate = endDate.substring(0, endDate.indexOf("."));
+        Response response = webTarget
+                .queryParam("endDate", endDate)
+                .queryParam("page", 0)
+                .queryParam("size", 10)
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get();
+        assertEquals(response.getStatus(), 200);
+        Page<Article> page = response.readEntity(TestPageImpl.class);
+        assertEquals(page.getContent().size(), 1);
+    }
+
+    @Test
+    public void getArticlesByPublishedDateBothDatesAreNull() {
+        LocalDateTime now = LocalDateTime.now();
+
+        WebTarget webTarget = client.target(INTEGRATION_TESTS_URL + "/article/published");
+        Response response = webTarget
+                .queryParam("page", 0)
+                .queryParam("size", 10)
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get();
+        assertEquals(response.getStatus(), 400);
+        HttpError error = response.readEntity(HttpError.class);
+        assertEquals(error.getMessage(), "You must specify at least one date");
+    }
+
+    @Test
+    public void getArticlesByPublishedDateInvalidDateFormat() {
+        LocalDateTime now = LocalDateTime.now();
+
+        WebTarget webTarget = client.target(INTEGRATION_TESTS_URL + "/article/published");
+        Response response = webTarget
+                .queryParam("startDate", "2015/10/10T00:00:00")
+                .queryParam("page", 0)
+                .queryParam("size", 10)
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get();
+        assertEquals(response.getStatus(), 400);
+        HttpError error = response.readEntity(HttpError.class);
+        assertEquals(error.getMessage(), "Date pattern is not matching: uuuu-MM-dd'T'HH:mm:ss");
+    }
+
+
+    @Test(dependsOnMethods = { "saveArticle" })
+    public void getArticlesByKeyword() {
+        WebTarget webTarget = client.target(INTEGRATION_TESTS_URL + "/article/keyword");
+        Response response = webTarget
+                .queryParam("keyword", "java")
+                .queryParam("page", 0)
+                .queryParam("size", 10)
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get();
+        assertEquals(response.getStatus(), 200);
+        Page<Article> page = response.readEntity(TestPageImpl.class);
+        assertEquals(page.getContent().size(), 1);
+    }
+
+
+    @Test
+    public void getArticlesByKeywordIsNull() {
+        WebTarget webTarget = client.target(INTEGRATION_TESTS_URL + "/article/keyword");
+        Response response = webTarget
+                .queryParam("page", 0)
+                .queryParam("size", 10)
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get();
+        assertEquals(response.getStatus(), 400);
     }
 
 }

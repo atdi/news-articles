@@ -25,6 +25,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 /**
  * Article REST resource.
@@ -35,6 +37,8 @@ import java.time.LocalDateTime;
 @Component
 @Path("article")
 public class ArticleResource {
+
+    private static final String DATE_PATTERN = "uuuu-MM-dd'T'HH:mm:ss";
 
     private final ArticleService articleService;
 
@@ -109,8 +113,8 @@ public class ArticleResource {
      * Get all articles by author.
      *
      * @param authorId author id
-     * @param page page
-     * @param size size
+     * @param page     page
+     * @param size     size
      * @return articles
      */
     @Path("author/{authorId}")
@@ -136,8 +140,8 @@ public class ArticleResource {
      * Get all articles by keyword.
      *
      * @param keyword keyword
-     * @param page page
-     * @param size size
+     * @param page    page
+     * @param size    size
      * @return articles
      */
     @Path("keyword")
@@ -157,6 +161,69 @@ public class ArticleResource {
                 keyword);
 
         return Response.ok(articles).build();
+    }
+
+    /**
+     * Get all articles published between specified dates.
+     *
+     * @param startDate from date
+     * @param endDate   to date
+     * @param page      page number
+     * @param size      page size
+     * @return articles
+     */
+    @Path("published")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @GET
+    public Response getByPublishedDate(
+            @QueryParam("startDate") final String startDate,
+            @QueryParam("endDate") final String endDate,
+            @QueryParam("page") final int page,
+            @QueryParam("size") final int size) {
+        try {
+
+            if (startDate != null && endDate != null) {
+                LocalDateTime sDate = LocalDateTime.parse(startDate,
+                        DateTimeFormatter.ofPattern(DATE_PATTERN));
+                LocalDateTime eDate = LocalDateTime.parse(endDate,
+                        DateTimeFormatter.ofPattern(DATE_PATTERN));
+                Page<Article> articles = articleService.
+                        getAllPublishedBetween(
+                        new PageRequest(page, size),
+                        sDate,
+                        eDate);
+                return Response.ok(articles).build();
+            }
+
+            if (startDate != null) {
+                LocalDateTime sDate = LocalDateTime.parse(startDate,
+                        DateTimeFormatter.ofPattern(DATE_PATTERN));
+                Page<Article> articles = articleService.
+                        getAllPublishedAfter(
+                        new PageRequest(page, size),
+                        sDate);
+                return Response.ok(articles).build();
+            }
+
+            if (endDate != null) {
+                LocalDateTime eDate = LocalDateTime.parse(endDate,
+                        DateTimeFormatter.ofPattern(DATE_PATTERN));
+                Page<Article> articles = articleService.
+                        getAllPublishedBefore(
+                        new PageRequest(page, size),
+                        eDate);
+                return Response.ok(articles).build();
+            }
+
+            throw new NewsException("You must specify at least one date",
+                    Response.Status.BAD_REQUEST);
+
+        } catch (DateTimeParseException e) {
+            throw new NewsException("Date pattern is not matching: "
+                    + DATE_PATTERN,
+                    Response.Status.BAD_REQUEST, e);
+        }
     }
 
 }

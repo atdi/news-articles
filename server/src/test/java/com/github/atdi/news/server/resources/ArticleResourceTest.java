@@ -5,6 +5,7 @@ import com.github.atdi.news.server.exceptions.NewsException;
 import com.github.atdi.news.server.services.ArticleSearchService;
 import com.github.atdi.news.server.services.ArticleService;
 import com.github.atdi.news.server.services.repositories.ArticleJpaRepository;
+import org.h2.util.New;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -148,4 +150,89 @@ public class ArticleResourceTest {
         Page<Article> retrievedArticles = (Page<Article>) response.getEntity();
         assertEquals(2, retrievedArticles.getContent().size());
     }
+
+
+    @Test
+    public void testGetArticlesByKeryword() throws Exception {
+        String keyword = "peace";
+        Page<Article> page = mock(Page.class);
+        when(page.getTotalPages()).thenReturn(1);
+        when(page.getTotalElements()).thenReturn(2L);
+        Article article1 = mock(Article.class);
+        Article article2 = mock(Article.class);
+        when(page.getContent()).thenReturn(Arrays.asList(article1, article2));
+        Pageable pageable = new PageRequest(0, 10);
+        when(articleSearchService.searchByKeyword(eq(pageable), eq(keyword))).thenReturn(page);
+        Response response = articleResource.getByKeyword(keyword, 0, 10);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        Page<Article> retrievedArticles = (Page<Article>) response.getEntity();
+        assertEquals(2, retrievedArticles.getContent().size());
+    }
+
+
+    @Test
+    public void testGetArticlesPublishedBetween() throws Exception {
+        LocalDateTime startDate = LocalDateTime.of(2015, 10, 1, 0, 0, 0);
+        LocalDateTime endDate = LocalDateTime.of(2015, 12, 1, 0, 0, 0);
+        Page<Article> page = mock(Page.class);
+        when(page.getTotalPages()).thenReturn(1);
+        when(page.getTotalElements()).thenReturn(2L);
+        Article article1 = mock(Article.class);
+        Article article2 = mock(Article.class);
+        when(page.getContent()).thenReturn(Arrays.asList(article1, article2));
+        Pageable pageable = new PageRequest(0, 10);
+        when(articleSearchService.searchPublishedBetween(eq(pageable), eq(startDate), eq(endDate))).thenReturn(page);
+        Response response = articleResource.getByPublishedDate("2015-10-01T00:00:00", "2015-12-01T00:00:00", 0, 10);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        Page<Article> retrievedArticles = (Page<Article>) response.getEntity();
+        assertEquals(2, retrievedArticles.getContent().size());
+    }
+
+    @Test
+    public void testGetArticlesPublishedBefore() throws Exception {
+        LocalDateTime endDate = LocalDateTime.of(2015, 12, 1, 0, 0, 0);
+        Page<Article> page = mock(Page.class);
+        when(page.getTotalPages()).thenReturn(1);
+        when(page.getTotalElements()).thenReturn(2L);
+        Article article1 = mock(Article.class);
+        Article article2 = mock(Article.class);
+        when(page.getContent()).thenReturn(Arrays.asList(article1, article2));
+        Pageable pageable = new PageRequest(0, 10);
+        when(articleSearchService.searchPublishedBefore(eq(pageable), eq(endDate))).thenReturn(page);
+        Response response = articleResource.getByPublishedDate(null, "2015-12-01T00:00:00", 0, 10);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        Page<Article> retrievedArticles = (Page<Article>) response.getEntity();
+        assertEquals(2, retrievedArticles.getContent().size());
+    }
+
+    @Test
+    public void testGetArticlesPublishedAfter() throws Exception {
+        LocalDateTime startDate = LocalDateTime.of(2015, 10, 1, 0, 0, 0);
+        Page<Article> page = mock(Page.class);
+        when(page.getTotalPages()).thenReturn(1);
+        when(page.getTotalElements()).thenReturn(2L);
+        Article article1 = mock(Article.class);
+        Article article2 = mock(Article.class);
+        when(page.getContent()).thenReturn(Arrays.asList(article1, article2));
+        Pageable pageable = new PageRequest(0, 10);
+        when(articleSearchService.searchPublishedAfter(eq(pageable), eq(startDate))).thenReturn(page);
+        Response response = articleResource.getByPublishedDate("2015-10-01T00:00:00", null, 0, 10);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        Page<Article> retrievedArticles = (Page<Article>) response.getEntity();
+        assertEquals(2, retrievedArticles.getContent().size());
+    }
+
+
+    @Test(expected = NewsException.class)
+    public void testGetArticlesPublishedNoDateInserted() throws Exception {
+        Response response = articleResource.getByPublishedDate(null, null, 0, 10);
+    }
+
+
+    @Test(expected = NewsException.class)
+    public void testGetArticlesPublishedIncorectDateFormat() throws Exception {
+        Response response = articleResource.getByPublishedDate("2015/12/01 00:00:00", null, 0, 10);
+    }
+
+
 }
