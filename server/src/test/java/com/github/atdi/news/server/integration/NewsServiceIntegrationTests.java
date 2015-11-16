@@ -157,6 +157,58 @@ public class NewsServiceIntegrationTests extends AbstractTestNGSpringContextTest
         assertTrue(authors.contains(lastAuthor));
     }
 
+    @Test
+    public void saveArticleInvalidUUID() {
+        WebTarget webTarget = client.target(INTEGRATION_TESTS_URL
+                + "/article/"
+                + "notvaliduuid");
+        Response response = webTarget
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .put(Entity.entity(Article.builder()
+                        .id("notvaliduuid")
+                        .header("header")
+                        .description("short")
+                        .text("text")
+                        .keywords(Sets.newSet("java", "php"))
+                        //.publishDate(LocalDateTime.now())
+                        .authors(Sets.newSet(lastAuthor))
+                        .build(), MediaType.APPLICATION_JSON_TYPE));
+        assertEquals(response.getStatus(), 400);
+    }
+
+    @Test(dependsOnMethods = { "createArticle", "getAuthor" })
+    public void saveArticleBadRequest() {
+        WebTarget webTarget = client.target(lastArticleUri);
+        Response response = webTarget
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .put(Entity.entity(Article.builder()
+                        .id(lastArticleId)
+                        .description("short")
+                        .text("text")
+                        .keywords(Sets.newSet("java", "php"))
+                        //.publishDate(LocalDateTime.now())
+                        .authors(Sets.newSet(lastAuthor))
+                        .build(), MediaType.APPLICATION_JSON_TYPE));
+        assertEquals(response.getStatus(), 400);
+    }
+
+    @Test(dependsOnMethods = { "createArticle", "getAuthor" })
+    public void saveArticleNotFound() {
+        WebTarget webTarget = client.target(lastArticleUri);
+        Response response = webTarget
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .put(Entity.entity(Article.builder()
+                        .id(UUID.randomUUID().toString())
+                        .description("short")
+                        .text("text")
+                        .header("header")
+                        .keywords(Sets.newSet("java", "php"))
+                        //.publishDate(LocalDateTime.now())
+                        .authors(Sets.newSet(lastAuthor))
+                        .build(), MediaType.APPLICATION_JSON_TYPE));
+        assertEquals(response.getStatus(), 404);
+    }
+
     @Test(dependsOnMethods = { "saveArticle" })
     public void getArticleById() {
         WebTarget webTarget = client.target(lastArticleUri);
