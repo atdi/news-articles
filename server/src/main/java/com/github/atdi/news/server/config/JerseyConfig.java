@@ -4,7 +4,6 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.github.atdi.news.server.util.JacksonContextResolver;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
-import org.glassfish.jersey.server.validation.ValidationError;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.ApplicationPath;
@@ -25,9 +24,9 @@ public class JerseyConfig extends ResourceConfig {
         property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
         property(ServerProperties.
                 BV_DISABLE_VALIDATE_ON_EXECUTABLE_OVERRIDE_CHECK, true);
-        register(ValidationError.class);
         register(JacksonJaxbJsonProvider.class);
         register(JacksonContextResolver.class);
+        register(ConstraintViolationExceptionMapper.class);
         packages("com.github.atdi.news.server.resources");
     }
 }
